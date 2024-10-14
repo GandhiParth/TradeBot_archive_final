@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 import polars as pl
 from exceptions import KiteLoginError, MissingKeyError, MissingSectionError
-from kiteconnect import KiteConnect
+from kiteconnect import KiteConnect, KiteTicker
 from pyotp import TOTP
 from ratelimit import limits, sleep_and_retry
 from selenium import webdriver  # v 4.18.1
@@ -14,7 +14,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from utils.utils import create_update_ini_file, get_today, read_ini_file
 
-from typing import List, Dict, Optional, Literal, Tuple, Union
+from typing import List, Dict, Optional, Literal, Tuple, Union, Any
 
 # contextmanager
 
@@ -517,7 +517,137 @@ class KiteHistorical:
         raise NotImplementedError
 
 
-class KiteWebSocket:
+def kite_map_symbols_tokens(
+    instrument_list: pl.DataFrame, file_location: str
+) -> pl.DataFrame:
     """
-    Returns Kite web socket for streaming tick data
+    Maps the symbols and to the instrument tokens
     """
+    raise NotImplementedError
+
+
+# KiteTicker Functions
+
+
+def on_ticks(ws: Any, ticks: List[Dict[str, Any]]) -> None:
+    """
+    Triggered when ticks are received.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    ticks (List[Dict[str, Any]]): List of tick objects received from the server.
+    """
+    print("Ticks received:", ticks)
+    raise NotImplementedError
+
+
+def on_connect(ws: Any, response: str) -> None:
+    """
+    riggered when the WebSocket connection is established successfully.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    response (str): Response received from the server on a successful connection.
+    """
+
+    logger.info("Connection established:", response)
+    raise NotImplementedError
+
+
+def on_close(ws: Any, code: int, reason: str) -> None:
+    """
+    Triggered when the WebSocket connection is closed.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    code (int): WebSocket close event code.
+    reason (str): The reason for closing the connection.
+    """
+
+    logger.error(f"""Connection closed: {code}, Reason: {reason}""")
+    raise NotImplementedError
+
+
+def on_error(ws: Any, code: int, reason: str) -> None:
+    """
+    Triggered when an error occurs during the WebSocket connection.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    code (int): WebSocket error event code.
+    reason (str): The reason for the error.
+    """
+
+    logger.error(f"Connection error: {code}, Reason: {reason}")
+    raise NotImplementedError
+
+
+def on_order_update(ws: Any, data: Dict[str, Any]) -> None:
+    """
+    Triggered when there is an order update for the connected user.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    data (Dict[str, Any]): The order update data received from the server.
+    """
+
+    print("Order update received:", data)
+    raise NotImplementedError
+
+
+def on_noreconnect(ws: Any) -> None:
+    """
+    Triggered when the number of auto-reconnection attempts exceeds the allowed retries.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    """
+
+    logger.warning("No more reconnect attempts left.")
+    raise NotImplementedError
+
+
+def on_reconnect(ws: Any, attempts_count: int) -> None:
+    """
+    Triggered when an auto-reconnection is attempted.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    attempts_count (int): The current reconnect attempt number.
+    """
+
+    logger.warning(f"Reconnect attempt {attempts_count}")
+    raise NotImplementedError
+
+
+def on_message(ws: Any, payload: bytes, is_binary: bool) -> None:
+    """
+    Triggered when a message is received from the server.
+
+    Parameters:
+    ws (Any): The WebSocket object.
+    payload (bytes): The message payload received from the server.
+    is_binary (bool): Whether the message is binary data or not.
+    """
+
+    logger.info("Message received (binary=%s): %s", is_binary, payload)
+    raise NotImplementedError
+
+
+def attach_handlers(kws: KiteTicker) -> KiteTicker:
+    """
+    Attach event handler functions to the Kite WebSocket object.
+
+    Parameters:
+    kws (KiteTicker): The KiteTicker WebSocket object to which event handlers will be attached.
+    """
+    kws.on_ticks = on_ticks
+    kws.on_connect = on_connect
+    kws.on_close = on_close
+    kws.on_error = on_error
+    kws.on_reconnect = on_reconnect
+    kws.on_noreconnect = on_noreconnect
+    kws.on_order_update = on_order_update
+    kws.on_message = on_message
+
+    return kws

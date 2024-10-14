@@ -1,0 +1,14 @@
+name: "Strategy Name"
+MODULE: "modulename"
+CLASS: "StrategyClassName"
+INTERVAL: "M15"
+PERIOD: 300
+RISK_PC: 1
+SIZING: "risk"
+PARAMETERS:
+  ema_period: 200
+  rsi_period: 14
+
+  RR: 2
+  stop_buffer: 10 #pips
+WATCHLIST: ["EUR_USD"]
