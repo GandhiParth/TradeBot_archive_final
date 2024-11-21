@@ -11,4 +11,6 @@ PARAMETERS:
 
   RR: 2
   stop_buffer: 10 #pips
-WATCHLIST: ["EUR_USD"]
+WATCHLIST:
+  - ["EUR", USD"]
+  - ["INR"]
